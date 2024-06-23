@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QLabel, QWidget
+from PyQt5.QtWidgets import QLabel, QWidget, QSizePolicy
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtCore import Qt
 
 
 class ImageWidget(QLabel):
@@ -12,6 +13,8 @@ class ImageWidget(QLabel):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
 
     def set_image(self, np_image):
         height, width, channel = np_image.shape
