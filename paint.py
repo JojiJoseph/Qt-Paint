@@ -92,6 +92,14 @@ class MainWindow(QMainWindow):
         self.image_widget.set_image(self.img)
 
     def create_menu(self):
+
+        self.create_file_menu()
+        self.create_edit_menu()
+        self.create_tools_menu()
+        self.create_colors_menu()
+        self.create_help_menu()
+
+    def create_file_menu(self):
         self.file_menu = self.menubar.addMenu("File")
         new_file_action = QAction("New", self)
         new_file_action.setShortcut(QKeySequence.New)
@@ -115,6 +123,8 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         self.file_menu.addAction(exit_action)
 
+    def create_edit_menu(self):
+
         self.edit_menu = self.menubar.addMenu("Edit")
         self.undo_stack = []
         undoAction = QAction("Undo", self)
@@ -125,6 +135,8 @@ class MainWindow(QMainWindow):
         self.redo_button = self.edit_menu.addAction(redoAction)
         self.undo_button = self.edit_menu.addAction(undoAction)
         undoAction.triggered.connect(self.undo)
+
+    def create_tools_menu(self):
         self.tools_menu = self.menubar.addMenu("Tools")
         self.toolActionGroup = QActionGroup(self, exclusive=True)
         for tool_name in ["Freehand", "Line", "Flood Fill"]:
@@ -137,6 +149,7 @@ class MainWindow(QMainWindow):
 
         self.toolActionGroup.actions()[0].setChecked(True)
 
+    def create_colors_menu(self):
         colors = {
             "Black": (0, 0, 0),
             "White": (255, 255, 255),
@@ -157,6 +170,7 @@ class MainWindow(QMainWindow):
         self.colorActionGroup.triggered.connect(self.color_selected)
         self.colorActionGroup.actions()[0].setChecked(True)
 
+    def create_help_menu(self):
         self.help_menu = self.menubar.addMenu("Help")
         self.about_button = self.help_menu.addAction("About")
         self.about_button.triggered.connect(self.show_about_dialog)
@@ -272,7 +286,6 @@ class MainWindow(QMainWindow):
             del self.tool
         self.tool = tool_class(self.img, self.ctx)
         self.tool.committed.connect(self.on_tool_committed)
-
 
     def show_about_dialog(self):
         dialog = AboutDialog(self)
