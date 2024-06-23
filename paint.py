@@ -45,9 +45,8 @@ class MainWindow(QMainWindow):
         self.image_widget.mouse_up.connect(self.mouse_up_event)
         self.image_widget.mouse_move.connect(self.mouse_move_event)
         self.layout.addWidget(self.image_widget)
-        img = np.ones((512, 512, 3), np.uint8) * 255
-        self.img = img
-        self.image_widget.set_image(img)
+        self.img = np.ones((512, 512, 3), np.uint8) * 255
+        self.image_widget.set_image(self.img)
 
         self.ctx = {
             "img": self.img,
@@ -57,8 +56,9 @@ class MainWindow(QMainWindow):
             "color": (0, 0, 0),
         }
 
-        self.tool = FreehandTool(img, self.ctx)
-        self.tool.committed.connect(self.on_tool_committed)
+        self.tool = None
+        self.set_tool(FreehandTool)
+        
         self.undo_stack = []
         self.redo_stack = []
 
