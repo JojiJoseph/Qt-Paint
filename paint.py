@@ -104,7 +104,6 @@ class MainWindow(QMainWindow):
         open_action.triggered.connect(self.open_image_dialog)
         self.file_menu.addAction(open_action)
 
-        # self.file_menu.addAction("Open")
         save_action = QAction("Save", self)
         save_action.setShortcut(QKeySequence.Save)
         save_action.triggered.connect(self.save_image_dialog)
@@ -199,8 +198,6 @@ class MainWindow(QMainWindow):
             options=options,
         )
         if file_name:
-            # print("Selected file:", file_name)
-            # self.image_label.setPixmap(QPixmap(file_name).scaled(self.image_label.size(), Qt.KeepAspectRatio))
             self.img = cv2.imread(file_name)
             self.image_widget.set_image(self.img)
             self.undo_stack.clear()
@@ -247,6 +244,8 @@ class MainWindow(QMainWindow):
             "Freehand": FreehandTool,
             "Flood Fill": FloodFillTool,
         }
+        tool_class = action_dict[action.text()]
+        self.set_tool(tool_class)
         if self.tool is not None:
             self.tool.committed.disconnect(self.on_tool_committed)
             del self.tool
@@ -260,33 +259,20 @@ class MainWindow(QMainWindow):
             command.undo()
         self.image_widget.set_image(self.img)
 
-    def set_line_tool(self):
-        if self.tool:
-            self.tool.committed.disconnect(self.on_tool_committed)
-            del self.tool
-        self.tool = LineTool(self.img)
-        self.tool.committed.connect(self.on_tool_committed)
-
-    def set_freehand_tool(self):
-        if self.tool:
-            self.tool.committed.disconnect(self.on_tool_committed)
-            del self.tool
-        self.tool = FreehandTool(self.img, self.ctx)
-        self.tool.committed.connect(self.on_tool_committed)
-
-    def set_flood_fill_tool(self):
-        if self.tool:
-            self.tool.committed.disconnect(self.on_tool_committed)
-            del self.tool
-        self.tool = FloodFillTool(self.img.self.ctx)
-        self.tool.committed.connect(self.on_tool_committed)
-
     def redo(self):
         if len(self.redo_stack) > 0:
             command = self.redo_stack.pop()
             self.undo_stack.append(command)
             command.execute()
         self.image_widget.set_image(self.img)
+
+    def set_tool(self, tool_class):
+        if self.tool:
+            self.tool.committed.disconnect(self.on_tool_committed)
+            del self.tool
+        self.tool = tool_class(self.img, self.ctx)
+        self.tool.committed.connect(self.on_tool_committed)
+
 
     def show_about_dialog(self):
         dialog = AboutDialog(self)
@@ -305,9 +291,13 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         # Create a message box that asks the user if they are sure they want to quit
-        reply = QMessageBox.question(self, 'Message',
-                                     "Are you sure you want to quit?", QMessageBox.Yes |
-                                     QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(
+            self,
+            "Message",
+            "Are you sure you want to quit?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
 
         if reply == QMessageBox.Yes:
             event.accept()  # User wants to quit

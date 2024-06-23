@@ -19,10 +19,14 @@ class Tool(QObject):
     def on_mouse_up(self, event):
         pass
 
+    def _get_color(self):
+        if self.ctx and "color" in self.ctx:
+            return list(reversed(self.ctx["color"]))
+        return (0, 0, 0)  # Default color
 
-class LineTool(QObject):
 
-    committed = pyqtSignal(object)
+
+class LineTool(Tool):
 
     def __init__(self, img, ctx=None) -> None:
         super().__init__()
@@ -33,15 +37,9 @@ class LineTool(QObject):
 
     def on_mouse_move(self, event):
         if self.clicked:
-            print("Mouse move")
             end = event.pos()
             self.preview = self.img.copy()
-            if self.ctx is not None:
-                color = self.ctx["color"]
-            else:
-                color = (0, 0, 0)
-
-            color = list(reversed(color))
+            color = self._get_color()
             cv2.line(
                 self.preview,
                 (self.start.x(), self.start.y()),
@@ -51,12 +49,10 @@ class LineTool(QObject):
             )
 
     def on_mouse_down(self, event):
-        print("Mouse down")
         self.clicked = True
         self.start = event.pos()
 
     def on_mouse_up(self, event):
-        print("Mouse up")
         if self.clicked:
             command = LineCommand(
                 self.img, self.start.x(), self.start.y(), event.x(), event.y(), self.ctx
@@ -84,18 +80,13 @@ class FreehandTool(Tool):
 
     def on_mouse_move(self, event):
         if self.clicked:
-            print("Mouse move")
             end = event.pos()
-            # self.preview = self.img.copy()
-            if self.ctx is not None:
-                color = self.ctx["color"]
-            else:
-                color = (0, 0, 0)
+            color = self._get_color()
             cv2.line(
                 self.preview,
                 (self.start.x(), self.start.y()),
                 (end.x(), end.y()),
-                list(reversed(color)),
+                color,
                 1,
             )
             self.points.append((end.x(), end.y()))
@@ -106,13 +97,11 @@ class FreehandTool(Tool):
             self.bottom_y = max(self.bottom_y, end.y())
 
     def on_mouse_down(self, event):
-        print("Mouse down")
         self.clicked = True
         self.start = event.pos()
         self.points = [(self.start.x(), self.start.y())]
 
     def on_mouse_up(self, event):
-        print("Mouse up")
         if self.clicked:
             command = FreehandCommand(self.img, self.points, self.ctx)
             command.execute()
@@ -137,18 +126,10 @@ class FloodFillTool(Tool):
 
     def on_mouse_down(self, event):
         self.preview = self.img.copy()
-        print((event.pos().x(), event.pos().y),)
-        
-        # print("Mouse down")
-        # self.clicked = True
-        # self.start = event.pos()
-        # self.points = [(self.start.x(), self.start.y())]
 
     def on_mouse_up(self, event):
-        color = self.ctx["color"]
-        color = list(reversed(color))
+        color = self._get_color()
         ret, _, mask, rect = cv2.floodFill(self.preview, None, (event.pos().x(), event.pos().y()), color)
-        print(rect)
         command = FloodFillCommand(self.img, (event.pos().x(), event.pos().y()), rect, self.ctx)
         command.execute()
         self.commit(command)

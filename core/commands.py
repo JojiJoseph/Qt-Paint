@@ -45,20 +45,14 @@ class FloodFillCommand:
         self.seed = seed
         self.rect = rect
         self.ctx = ctx
-        print(self.rect)
-        # exit()
+
     def execute(self):
         color = self.ctx["color"]
         color = list(reversed(color))
         x, y, w, h = self.rect[0], self.rect[1], self.rect[2], self.rect[3]
         self.undo_mask = self.buffer[y:y+h, x:x+w].copy()
-        # cv2.floodFill(buffer, None, points, (0, 255, 0))
         cv2.floodFill(self.buffer, None, self.seed, color)
-        # cv2.imshow("new buffer", self.buffer)
-        # cv2.waitKey(1)t
-        print("Executed")
-        # cv2.polylines(self.buffer, [np.array(self.points)], False, (0, 255, 0), 1)
+
     def undo(self):
-        # self.buffer[self.top:self.bottom+1, self.left:self.right+1] = self.undo_mask.copy()
         x, y, w, h = self.rect[0], self.rect[1], self.rect[2], self.rect[3]
         self.buffer[y:y+h, x:x+w] = self.undo_mask.copy()
