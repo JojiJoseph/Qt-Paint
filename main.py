@@ -30,9 +30,13 @@ class MainWindow(QMainWindow):
         self.menubar = self.menuBar()
         self.create_menu()
         self.image_widget = ImageWidget(self)
+        self.image_widget.mouse_down.connect(self.mouse_down_event)
+        self.image_widget.mouse_up.connect(self.mouse_up_event)
+        self.image_widget.mouse_move.connect(self.mouse_move_event)
         self.layout.addWidget(self.image_widget)
         img = np.zeros((512, 512, 3), np.uint8)
         cv2.circle(img, (50, 50), 20, (255, 0, 0), -1)
+        self.img = img
         self.image_widget.set_image(img)
         
 
@@ -53,6 +57,23 @@ class MainWindow(QMainWindow):
         dialog = AboutDialog(self)
         dialog.setWindowTitle("About")
         dialog.exec_()
+
+    def mouse_down_event(self, event):
+        print("Mouse down")
+        self.clicked = True
+        self.start = event.pos()
+
+    def mouse_up_event(self, event):
+        print("Mouse up")
+        self.clicked = False
+
+    def mouse_move_event(self, event):
+        if self.clicked:
+            print("Mouse move")
+            end = event.pos()
+            cv2.line(self.img, (self.start.x(), self.start.y()), (end.x(), end.y()), (0, 255, 0), 5)
+            self.image_widget.set_image(self.img)
+            self.start = end
 
 
 window = MainWindow()
